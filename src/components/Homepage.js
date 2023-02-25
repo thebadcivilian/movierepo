@@ -75,7 +75,7 @@ function Homepage() {
             movie.show.image?.medium ||
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSdT-CMjPc50R-jKEvJl_rcn3mBMvkcUwERg&usqp=CAU";
 
-          // console.log(movie);
+          console.log("movie", movie);
 
           const movieSummary = movie.show.summary
             .replace("<p>", "")
