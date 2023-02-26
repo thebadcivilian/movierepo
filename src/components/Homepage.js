@@ -2,21 +2,46 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MapMovieData from "./MapMovieData";
 import { Link } from "react-router-dom";
+import LinearProgress from "@mui/material/LinearProgress";
+import Box from "@mui/material/Box";
 
 function Homepage() {
   const [movieList, setMovieList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // api call to fetch data
   async function getData() {
-    axios
-      .get("https://api.tvmaze.com/search/shows?q=all")
-      .then((res) => setMovieList(res.data))
-      .catch((err) => console.log(err.message));
+    setTimeout(() => {
+      setIsLoading(true);
+      axios
+        .get("https://api.tvmaze.com/search/shows?q=all")
+        .then((res) => setMovieList(res.data))
+        .catch((err) => console.log(err.message));
+    }, 2000);
+
+    setIsLoading(false);
   }
 
   useEffect(() => {
     getData();
   }, []);
+
+  const searchHandler = (e) => {
+    e.preventDefault();
+    console.log(searchTerm);
+    setMovieList(() => {
+      return movieList.filter((movie) => {
+        if (searchTerm === "") {
+          console.log("empty search");
+        } else if (
+          movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+          return movie;
+        }
+      });
+    });
+  };
 
   return (
     <>
@@ -54,47 +79,72 @@ function Homepage() {
                 </Link>
               </li>
             </ul>
-            <form className="d-flex" role="search">
+            <form onSubmit={searchHandler} className="d-flex" role="search">
               <input
                 className="form-control me-2"
                 type="search"
                 placeholder="Search"
                 aria-label="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <button className="btn btn-outline-success" type="submit">
+              <button
+                className="btn btn-outline-success"
+                type="submit"
+                value="search"
+              >
                 Search
               </button>
             </form>
           </div>
         </div>
       </nav>
+
       <div className="d-flex p-2 mx-3 flex-row flex-wrap">
         {/* mapping every api movie data with an individual card   */}
-        {movieList.map((movie, index) => {
-          const movieImage =
-            movie.show.image?.medium ||
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSdT-CMjPc50R-jKEvJl_rcn3mBMvkcUwERg&usqp=CAU";
+        {movieList
+          // .filter((movie) => {
+          //   if (searchTerm === "") {
+          //     console.log("empty search");
+          //   } else if (
+          //     movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
+          //   ) {
+          //     return movie;
+          //   }
+          // })
+          .map((movie, index) => {
+            // console.log(index);
+            const movieImage =
+              movie.show.image?.medium ||
+              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSdT-CMjPc50R-jKEvJl_rcn3mBMvkcUwERg&usqp=CAU";
 
-          console.log("movie", movie);
+            // console.log("movie", movie.show.name.toLowerCase());
 
-          const movieSummary = movie.show.summary
-            .replace("<p>", "")
-            .replace("<b>", "")
-            .replace("</p>", "")
-            .replace("</b>", "");
+            const movieSummary = movie.show.summary
+              .replace("<p>", "")
+              .replace("<b>", "")
+              .replace("</p>", "")
+              .replace("</b>", "");
 
-          return (
-            <>
-              <MapMovieData
-                key={index}
-                image={movieImage}
-                name={movie.show.name}
-                summary={movieSummary}
-              ></MapMovieData>
-            </>
-          );
-        })}
+            return (
+              <>
+                <MapMovieData
+                  key={index}
+                  image={movieImage}
+                  name={movie.show.name}
+                  summary={movieSummary}
+                ></MapMovieData>
+              </>
+            );
+          })}
       </div>
+      {isLoading ? (
+        ""
+      ) : (
+        <Box sx={{ width: "100%" }}>
+          <LinearProgress />
+        </Box>
+      )}
     </>
   );
 }
