@@ -4,11 +4,51 @@ import MapMovieData from "./MapMovieData";
 import { Link } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
+import ReactPaginate from "react-paginate";
+import "./Pagination.css";
 
 function Homepage() {
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pageNo, setPageNo] = useState(0);
+
+  const moviePerPage = 5;
+  const pagesVisited = pageNo * moviePerPage;
+
+  const displayMovies = movieList
+    .slice(pagesVisited, pagesVisited + moviePerPage)
+    .map((movie, index) => {
+      // console.log(index);
+      const movieImage =
+        movie.show.image?.medium ||
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSdT-CMjPc50R-jKEvJl_rcn3mBMvkcUwERg&usqp=CAU";
+
+      // console.log("movie", movie.show.name.toLowerCase());
+
+      const movieSummary = movie.show.summary
+        .replace("<p>", "")
+        .replace("<b>", "")
+        .replace("</p>", "")
+        .replace("</b>", "");
+
+      return (
+        <>
+          <MapMovieData
+            key={index}
+            image={movieImage}
+            name={movie.show.name}
+            summary={movieSummary}
+          ></MapMovieData>
+        </>
+      );
+    });
+
+  const pageCount = Math.ceil(movieList.length / moviePerPage);
+
+  const pageChangeHandler = ({ selected }) => {
+    setPageNo(selected);
+  };
 
   // api call to fetch data
   async function getData() {
@@ -27,20 +67,27 @@ function Homepage() {
     getData();
   }, []);
 
+  // useEffect(() => {
+  //   const searchHandler = () => {};
+  // });
+
   const searchHandler = (e) => {
     e.preventDefault();
-    console.log(searchTerm);
-    setMovieList(() => {
-      return movieList.filter((movie) => {
-        if (searchTerm === "") {
-          console.log("empty search");
-        } else if (
-          movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ) {
-          return movie;
-        }
-      });
-    });
+
+    // console.log(searchTerm);
+    // alert(searchTerm)
+
+    //   setMovieList(() => {
+    //     return movieList.filter((movie) => {
+    //       if (searchTerm === "") {
+    //         console.log("empty search");
+    //       } else if (
+    //         movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
+    //       ) {
+    //         return movie;
+    //       }
+    //     });
+    //   });
   };
 
   return (
@@ -102,41 +149,18 @@ function Homepage() {
 
       <div className="d-flex p-2 mx-3 flex-row flex-wrap">
         {/* mapping every api movie data with an individual card   */}
-        {movieList
-          // .filter((movie) => {
-          //   if (searchTerm === "") {
-          //     console.log("empty search");
-          //   } else if (
-          //     movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
-          //   ) {
-          //     return movie;
-          //   }
-          // })
-          .map((movie, index) => {
-            // console.log(index);
-            const movieImage =
-              movie.show.image?.medium ||
-              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSdT-CMjPc50R-jKEvJl_rcn3mBMvkcUwERg&usqp=CAU";
-
-            // console.log("movie", movie.show.name.toLowerCase());
-
-            const movieSummary = movie.show.summary
-              .replace("<p>", "")
-              .replace("<b>", "")
-              .replace("</p>", "")
-              .replace("</b>", "");
-
-            return (
-              <>
-                <MapMovieData
-                  key={index}
-                  image={movieImage}
-                  name={movie.show.name}
-                  summary={movieSummary}
-                ></MapMovieData>
-              </>
-            );
-          })}
+        {displayMovies}
+        <ReactPaginate
+          previousLabel={"Previous"}
+          nextLabel={"Next"}
+          pageCount={pageCount}
+          onPageChange={pageChangeHandler}
+          containerClassName={"paginationBttns"}
+          previousLinkClassName={"previousBttn"}
+          nextLinkClassName={"nextBttn"}
+          disabledClassName={"paginationDisabled"}
+          activeClassName={"paginationActive"}
+        />
       </div>
       {isLoading ? (
         ""
