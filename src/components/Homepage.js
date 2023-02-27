@@ -9,12 +9,13 @@ import "./Pagination.css";
 
 function Homepage() {
   const [movieList, setMovieList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNo, setPageNo] = useState(0);
 
   const moviePerPage = 5;
   const pagesVisited = pageNo * moviePerPage;
+  // console.log(pageNo, moviePerPage);
 
   const displayMovies = movieList
     .slice(pagesVisited, pagesVisited + moviePerPage)
@@ -36,6 +37,7 @@ function Homepage() {
         <>
           <MapMovieData
             key={index}
+            isLoading={isLoading}
             image={movieImage}
             name={movie.show.name}
             summary={movieSummary}
@@ -52,13 +54,11 @@ function Homepage() {
 
   // api call to fetch data
   async function getData() {
-    setTimeout(() => {
-      setIsLoading(true);
-      axios
-        .get("https://api.tvmaze.com/search/shows?q=all")
-        .then((res) => setMovieList(res.data))
-        .catch((err) => console.log(err.message));
-    }, 2000);
+    // setIsLoading(true);
+    axios
+      .get("https://api.tvmaze.com/search/shows?q=all")
+      .then((res) => setMovieList(res.data))
+      .catch((err) => console.log(err.message));
 
     setIsLoading(false);
   }
@@ -74,20 +74,20 @@ function Homepage() {
   const searchHandler = (e) => {
     e.preventDefault();
 
-    // console.log(searchTerm);
-    // alert(searchTerm)
+    console.log(searchTerm);
 
-    //   setMovieList(() => {
-    //     return movieList.filter((movie) => {
-    //       if (searchTerm === "") {
-    //         console.log("empty search");
-    //       } else if (
-    //         movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
-    //       ) {
-    //         return movie;
-    //       }
-    //     });
-    //   });
+    setMovieList(() => {
+      return movieList.filter((movie) => {
+        if (searchTerm === "") {
+          console.log("empty search");
+          return movieList;
+        } else if (
+          movie.show.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+          return movie;
+        }
+      });
+    });
   };
 
   return (
@@ -147,28 +147,30 @@ function Homepage() {
         </div>
       </nav>
 
-      <div className="d-flex p-2 mx-3 flex-row flex-wrap">
+      <div className="d-flex p-2 mx-3 flex-row flex-wrap justify-content-center">
+        {isLoading ? (
+          <Box sx={{ width: "100%" }}>
+            <LinearProgress />
+          </Box>
+        ) : (
+          <>
+            {displayMovies}
+
+            <ReactPaginate
+              previousLabel={"Previous"}
+              nextLabel={"Next"}
+              pageCount={pageCount}
+              onPageChange={pageChangeHandler}
+              containerClassName={"paginationBttns"}
+              previousLinkClassName={"previousBttn"}
+              nextLinkClassName={"nextBttn"}
+              disabledClassName={"paginationDisabled"}
+              activeClassName={"paginationActive"}
+            />
+          </>
+        )}
         {/* mapping every api movie data with an individual card   */}
-        {displayMovies}
-        <ReactPaginate
-          previousLabel={"Previous"}
-          nextLabel={"Next"}
-          pageCount={pageCount}
-          onPageChange={pageChangeHandler}
-          containerClassName={"paginationBttns"}
-          previousLinkClassName={"previousBttn"}
-          nextLinkClassName={"nextBttn"}
-          disabledClassName={"paginationDisabled"}
-          activeClassName={"paginationActive"}
-        />
       </div>
-      {isLoading ? (
-        ""
-      ) : (
-        <Box sx={{ width: "100%" }}>
-          <LinearProgress />
-        </Box>
-      )}
     </>
   );
 }

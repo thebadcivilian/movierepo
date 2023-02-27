@@ -1,7 +1,8 @@
+import { Box, LinearProgress } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
 
-function MapMovieData({ name, image, summary }) {
+function MapMovieData({ name, image, summary, isLoading }) {
   function setDataToStorage(summary, image, name) {
     localStorage.setItem("summary", summary);
     localStorage.setItem("image", image);
@@ -13,7 +14,15 @@ function MapMovieData({ name, image, summary }) {
       <img
         style={{ height: "295px", width: "210px" }}
         className="rounded img-fluid"
-        src={image}
+        src={
+          isLoading ? (
+            <Box sx={{ width: "inherit" }}>
+              <LinearProgress />
+            </Box>
+          ) : (
+            image
+          )
+        }
         alt=""
       />
       <h4 className="mt-4 mb-2">{name}</h4>

@@ -36,3 +36,9 @@
     transform: rotate(360deg);
   }
 }
+
+@media screen and (min-width: 320px) {
+  .App {
+    justify-content: center;
+  }
+}
